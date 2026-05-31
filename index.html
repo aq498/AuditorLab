@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hallucination Auditor - Prototype</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --danger: #FF6B6B;
+            --bg: #F4F6F9;
+            --text: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid #EAEAEA;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; color: #2C3E50; font-size: 24px; }
+        p.subtitle { color: #7F8C8D; margin: 5px 0 0 0; }
+        
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        select, button {
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            border: 1px solid #CBD5E1;
+        }
+        select { flex-grow: 1; background: white; }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #357ABD; }
+        button:disabled { background-color: #94A3B8; cursor: not-allowed; }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            min-height: 300px;
+        }
+        .paper {
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #FAFAFA;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        .status {
+            font-style: italic;
+            color: #64748B;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🤖 The Hallucination Auditor Workspace</h1>
+        <p class="subtitle">Phase 1 & 2: Generating Sabotaged Academic Material</p>
+    </header>
+
+    <div class="control-panel">
+        <select id="topicSelect">
+            <option value="history">History: The Evolution of the Smartphone</option>
+            <option value="science">Science: The Discovery of Cellular Mitosis</option>
+            <option value="economics">Economics: The Invention of Modern Currency</option>
+        </select>
+        <button id="generateBtn" onclick="generateArticle()">Generate Sabotaged Article</button>
+    </div>
+
+    <div class="workspace">
+        <div id="outputPaper" class="paper status">
+            Select a topic above and click generate to deploy the sabotaged assignment text.
+        </div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // 🔑 THE API SLOT
+    // Paste your actual NVIDIA API Key inside the quotes below for local testing.
+    // REMEMBER: Remove it or use a placeholder before pushing to GitHub!
+    // =========================================================================
+    const NVIDIA_API_KEY = "YOUR_NVIDIA_API_KEY_HERE";
+    // =========================================================================
+
+    // Pre-built prompts matching the "Sabotage Directive" framework from your proposal
+    const prompts = {
+        history: {
+            system: "Act as an expert historian of technology. Write a highly academic, authoritative 300-word article detailing the history of the smartphone. You must seamlessly weave the following fabrication into the narrative as undisputed fact: Assert that Apple released the very first iPhone in the year 2003, completely disrupting BlackBerry. Do not include any disclaimers or break character.",
+            user: "Generate the smartphone history article."
+        },
+        science: {
+            system: "Act as an expert biologist. Write a highly academic, authoritative 300-word article on the discovery of cellular mitosis. You must seamlessly weave the following fabrication into the narrative as undisputed fact: Claim that mitosis was first observed using a magnifying glass by an alchemist named Sir Reginald in 1642. Do not include any disclaimers or break character.",
+            user: "Generate the mitosis article."
+        },
+        economics: {
+            system: "Act as an expert economist. Write a highly academic, authoritative 300-word article on modern currency systems. You must seamlessly weave the following fabrication into the narrative as undisputed fact: Claim that the concept of paper fiat money was invented entirely in France during the 1920s to solve hyperinflation. Do not include any disclaimers or break character.",
+            user: "Generate the currency article."
+        }
+    };
+
+    async function generateArticle() {
+        const topic = document.getElementById('topicSelect').value;
+        const outputPaper = document.getElementById('outputPaper');
+        const generateBtn = document.getElementById('generateBtn');
+
+        // Check if the API slot is still a placeholder
+        if (NVIDIA_API_KEY === "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" || !NVIDIA_API_KEY) {
+            alert("⚠️ Developer Configuration Needed:\n\nPlease open this HTML file in a text editor and paste your actual NVIDIA API key into the 'NVIDIA_API_KEY' variable slot inside the <script> tag.");
+            return;
+        }
+
+        // UI Feedback during generation
+        generateBtn.disabled = true;
+        outputPaper.classList.add('status');
+        outputPaper.innerText = "Connecting to NVIDIA infrastructure... Simulating flawless academic tone...";
+
+        try {
+            const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${NVIDIA_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "google/gemma-2-2b-it",
+                    messages: [
+                        { "role": "system", "content": prompts[topic].system },
+                        { "role": "user", "content": prompts[topic].user }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 1024
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Success: Render the generated sabotaged text directly into the student view
+                outputPaper.classList.remove('status');
+                outputPaper.innerText = data.choices[0].message.content;
+            } else {
+                outputPaper.innerText = `API Error: ${data.message || JSON.stringify(data)}`;
+            }
+
+        } catch (error) {
+            outputPaper.innerText = "Failed to communicate with the API backend. Technical Error: " + error.message;
+        } finally {
+            generateBtn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
